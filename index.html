@@ -111,7 +111,7 @@
     <div class="info-grid">
       <div class="info">
         <h3>任务 The task</h3>
-        <p>组委会提供一段模拟 + 真实 O3a 噪声的探测器<b>应变流</b>：采样率 2048 Hz、低频截止 20 Hz，按每 <b>8 秒</b> 切成一个评测窗（16384 点/窗），共 <b>1200</b> 个测试窗。部分窗注入了双黑洞并合信号，部分只有噪声或瞬态伪信号(glitch)。请判断<b>每个窗是否含引力波信号</b>。
+        <p>数据集是一段模拟 + 真实 O3a 噪声的探测器<b>应变流</b>：采样率 2048 Hz、低频截止 20 Hz，按每 <b>8 秒</b> 切成一个评测窗（16384 点/窗），共 <b>1200</b> 个测试窗。部分窗注入了双黑洞并合信号，部分只有噪声或瞬态伪信号(glitch)。请判断<b>每个窗是否含引力波信号</b>。
         <span class="en">A 1-D detector strain stream (2048 Hz, 8 s windows, 1200 test windows). Some windows contain binary-black-hole merger signals; decide, per window, whether a signal is present.</span></p>
         <p style="margin-bottom:0">提交格式：每个窗一行 <code>id,prediction</code>，<code>prediction</code> = 该窗含信号的显著性/概率（越大越像有信号）。
         <span class="en">Submit one row per window: <code>id,prediction</code>, where prediction is the signal significance/probability.</span></p>
@@ -120,8 +120,8 @@
         <h3>评分 Scoring</h3>
         <p>对全部 1200 个测试窗计算单一 <b>ROC-AUC</b>，得分即：</p>
         <div class="formula">得分 Score = <b>AUC × 100</b></div>
-        <p style="margin-bottom:0">纯客户端计算，与组委会 <code>evaluate.py</code> 口径一致（平均秩 AUC，等价 sklearn <code>roc_auc_score</code>）。基准：全 0.5 → 50 分；完美排序 → 100 分。
-        <span class="en">Single ROC-AUC over all 1200 windows, ×100. Computed in-browser, matching the organiser's <code>roc_auc_score</code>.</span></p>
+        <p style="margin-bottom:0">纯客户端计算，采用平均秩 AUC，与 sklearn <code>roc_auc_score</code> 逐位一致。基准：全 0.5 → 50 分；完美排序 → 100 分。
+        <span class="en">Single ROC-AUC over all 1200 windows, ×100. Computed in-browser, matching sklearn's <code>roc_auc_score</code>.</span></p>
       </div>
       <div class="info">
         <h3>下载数据 Download</h3>

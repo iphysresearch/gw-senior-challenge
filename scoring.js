@@ -1,7 +1,7 @@
 /*
  * scoring.js —— 青年组「引力波事件识别」纯客户端评分核心（无 DOM 依赖）
  *
- * 评分口径（与组委会 evaluate.py 一致）：
+ * 评分口径：
  *   提交文件格式：id,prediction（prediction = 该 8s 窗含引力波信号的显著性/概率）
  *   与答案 solution.csv(id,label) 按 id 对齐 → 计算全体测试窗的单一 ROC-AUC
  *   最终得分 = AUC × 100（0–100 分）
