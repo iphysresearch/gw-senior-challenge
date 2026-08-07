@@ -1,0 +1,27 @@
+{
+  "fs": 2048.0,
+  "f_low": 20.0,
+  "seg_sec": 8.0,
+  "nseg": 16384,
+  "t0_gps": 1262304000,
+  "tier": "senior",
+  "n_train": 800,
+  "n_test": 1200,
+  "n_templates": 15,
+  "glitch_frac": 0.5,
+  "tolerance_sec": 0.2,
+  "metric": "roc_auc",
+  "score_formula": "AUC*100 - (3-fields_correct)*10",
+  "noise_features": {
+    "source": "real_O3a",
+    "desc": "MLGWSC-1 ds4 background（真实 O3a 探测器数据），段级幅度定标后按 8s 网格无重叠抽窗；train/test 段池不相交。非平稳、谱线（60Hz 电源线/约505Hz violin 等）与真实瞬态由数据本身携带。",
+    "noise_file": "background_set4_604800dur_seed40_start0.hdf",
+    "detector": "H1",
+    "glitch_families": [
+      "glitch_sg",
+      "glitch_blip",
+      "glitch_scatter",
+      "glitch_chirplet"
+    ]
+  }
+}

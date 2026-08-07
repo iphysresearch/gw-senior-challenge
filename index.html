@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>青年组 · 引力波事件识别挑战 — 公开评分台</title>
+<meta name="description" content="AI 辅助引力波事件识别挑战（青年组）公开评分台：上传 id,prediction 提交文件，浏览器本地即时算出 ROC-AUC 得分。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 16 Q8 4 12 16 T22 16 T30 16' fill='none' stroke='%234fe3d0' stroke-width='2.5'/%3E%3C/svg%3E">
+</head>
+<body>
+<div class="bg-layer bg-mesh"></div>
+<div class="bg-layer bg-grid"></div>
+<div class="bg-layer bg-grain"></div>
+
+<div class="wrap">
+
+  <!-- top bar -->
+  <div class="topbar rise d1">
+    <div class="brand">
+      <span class="pulse"></span>
+      <span class="tag">GW&nbsp;Challenge · 青年组 / Senior</span>
+    </div>
+    <nav>
+      <a href="#submit">提交 Submit</a>
+      <a href="#board">排行榜 Board</a>
+      <a href="#task">赛题 Task</a>
+    </nav>
+  </div>
+
+  <!-- hero -->
+  <header class="hero">
+    <div class="station rise d1">AI-Assisted Gravitational-Wave Event Detection</div>
+    <h1 class="rise d2">从噪声之海<br>“听见”<em>时空涟漪</em></h1>
+    <p class="sub rise d3">
+      上传你的 <code style="font-family:var(--mono);color:var(--cyan)">id,prediction</code> 提交文件，浏览器本地即时算出 ROC-AUC 得分，并以团队名记入排行榜。任何人皆可参赛。
+      <span class="en">Upload your <code>id,prediction</code> file — your ROC-AUC score is computed right here in the browser and logged under your team name. Open to everyone.</span>
+    </p>
+    <div class="chirp rise d4">
+      <span class="axis">STRAIN · H1</span>
+      <span class="axis r">CHIRP ↗</span>
+      <canvas id="chirp" width="1040" height="130"></canvas>
+    </div>
+  </header>
+
+  <!-- submit -->
+  <section id="submit">
+    <div class="eyebrow rise"><span class="n">01</span> 提交并评分 / Submit &amp; Score</div>
+    <div class="grid2">
+      <!-- form -->
+      <div class="card rise">
+        <label class="fld">
+          <span class="lab">团队名称 Team&nbsp;name <span class="req">*</span></span>
+          <input type="text" id="team" maxlength="40" placeholder="例如：猎户座小队 / e.g. Orion Squad" autocomplete="off">
+        </label>
+        <label class="fld" style="margin-bottom:14px">
+          <span class="lab">提交文件 Submission&nbsp;·&nbsp;<span style="color:var(--cyan)">id,prediction</span> (.csv)</span>
+          <div class="drop" id="drop">
+            <input type="file" id="file" accept=".csv,text/csv">
+            <div class="ico">⤒</div>
+            <div class="big" id="dropBig">拖入或点击选择 CSV 文件</div>
+            <div class="small" id="dropSmall">Drag &amp; drop, or click to choose · 1200 行 / rows</div>
+          </div>
+        </label>
+        <button class="btn" id="scoreBtn" disabled>▶ 计&nbsp;算&nbsp;得&nbsp;分 · SCORE</button>
+        <div class="hint">
+          没有提交文件？先下载 <a href="./data/test_strain.npy" download>test_strain.npy</a> 跑出你的检测结果，
+          或用 <a href="./data/sample_submission.csv" download>sample_submission.csv</a> 作模板。
+          <br>Need a file? Grab the data below in <a href="#task">§ 赛题 / Task</a>.
+        </div>
+      </div>
+      <!-- readout -->
+      <div class="readout idle" id="readout">
+        <div class="glyph">◠◡◠</div>
+        <div>等待提交…<br><span style="font-size:12px">Awaiting a submission — your score appears here.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- leaderboard -->
+  <section id="board">
+    <div class="lb-head">
+      <div class="eyebrow rise" style="margin-bottom:0"><span class="n">02</span> 排行榜 / Leaderboard</div>
+      <div class="actions">
+        <button class="tbtn" id="exportBtn">导出 CSV</button>
+        <button class="tbtn danger" id="clearBtn">清空 Clear</button>
+      </div>
+    </div>
+    <div id="lbWrap">
+      <table class="table" id="lbTable" hidden>
+        <thead><tr>
+          <th class="rank">#</th><th>团队 Team</th>
+          <th class="num">得分 Score</th><th class="num">AUC</th><th class="num">提交时间 Time</th>
+        </tr></thead>
+        <tbody id="lbBody"></tbody>
+      </table>
+      <div class="lb-empty" id="lbEmpty">还没有成绩 — 成为第一个吧。<br>No scores yet — be the first.</div>
+    </div>
+    <div class="hint" style="margin-top:12px">
+      排行榜保存在<b style="color:var(--ink-dim)">你当前浏览器本地</b>（localStorage），换设备或清缓存会清空；同一团队仅保留其历史最高分。
+      <br>The board is stored locally in <b>this browser</b>; each team keeps its best score.
+    </div>
+  </section>
+
+  <!-- task / data -->
+  <section id="task">
+    <div class="eyebrow rise"><span class="n">03</span> 赛题与数据 / Task &amp; Data</div>
+    <div class="info-grid">
+      <div class="info">
+        <h3>任务 The task</h3>
+        <p>组委会提供一段模拟 + 真实 O3a 噪声的探测器<b>应变流</b>：采样率 2048 Hz、低频截止 20 Hz，按每 <b>8 秒</b> 切成一个评测窗（16384 点/窗），共 <b>1200</b> 个测试窗。部分窗注入了双黑洞并合信号，部分只有噪声或瞬态伪信号(glitch)。请判断<b>每个窗是否含引力波信号</b>。
+        <span class="en">A 1-D detector strain stream (2048 Hz, 8 s windows, 1200 test windows). Some windows contain binary-black-hole merger signals; decide, per window, whether a signal is present.</span></p>
+        <p style="margin-bottom:0">提交格式：每个窗一行 <code>id,prediction</code>，<code>prediction</code> = 该窗含信号的显著性/概率（越大越像有信号）。
+        <span class="en">Submit one row per window: <code>id,prediction</code>, where prediction is the signal significance/probability.</span></p>
+      </div>
+      <div class="info">
+        <h3>评分 Scoring</h3>
+        <p>对全部 1200 个测试窗计算单一 <b>ROC-AUC</b>，得分即：</p>
+        <div class="formula">得分 Score = <b>AUC × 100</b></div>
+        <p style="margin-bottom:0">纯客户端计算，与组委会 <code>evaluate.py</code> 口径一致（平均秩 AUC，等价 sklearn <code>roc_auc_score</code>）。基准：全 0.5 → 50 分；完美排序 → 100 分。
+        <span class="en">Single ROC-AUC over all 1200 windows, ×100. Computed in-browser, matching the organiser's <code>roc_auc_score</code>.</span></p>
+      </div>
+      <div class="info">
+        <h3>下载数据 Download</h3>
+        <div class="dl">
+          <a href="./data/test_strain.npy" download>test_strain.npy <span class="sz">测试应变流 · 75 MB</span></a>
+          <a href="./data/train_strain.npy" download>train_strain.npy <span class="sz">训练应变流 · 50 MB</span></a>
+          <a href="./data/train_labels.csv" download>train_labels.csv <span class="sz">训练标签</span></a>
+          <a href="./data/sample_submission.csv" download>sample_submission.csv <span class="sz">提交模板</span></a>
+          <a href="./data/template_bank.csv" download>template_bank.csv <span class="sz">模板库参数</span></a>
+          <a href="./data/meta.json" download>meta.json <span class="sz">数据规格</span></a>
+        </div>
+      </div>
+      <div class="info">
+        <h3>快速上手 Quick start</h3>
+        <p>用 Python 读取应变流并生成提交：</p>
+        <pre style="font-family:var(--mono);font-size:12px;color:var(--ink-dim);background:#091120;border:1px solid var(--line);border-radius:12px;padding:14px;overflow:auto;margin:0"><code>import numpy as np, csv
+x = np.load("test_strain.npy")          # (1200, 16384)
+pred = your_detector(x)                  # 越大越像有信号
+with open("submission.csv","w",newline="") as f:
+    w = csv.writer(f); w.writerow(["id","prediction"])
+    for i,p in enumerate(pred): w.writerow([i, float(p)])</code></pre>
+        <p class="en" style="margin:10px 0 0">Load the strain, produce a per-window score, write <code>id,prediction</code>, upload above.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div>青年组 · AI 辅助引力波事件识别挑战 — 公开评分台 / Public Scoring Station</div>
+    <div class="note">
+      赛事已结束，本站为公开演示：评分完全在你的浏览器内完成，答案文件随站点公开，仅供学习与自测；排行榜为浏览器本地存储。
+      Competition closed; this is a public demo. Scoring runs entirely client-side, the answer key is public by design (for self-testing), and the leaderboard is browser-local.
+    </div>
+  </footer>
+</div>
+
+<script src="./scoring.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
